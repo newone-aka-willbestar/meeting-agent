@@ -1,0 +1,5 @@
+# 开发/CI 用依赖（运行时不需要，故与 requirements.txt 分开）
+-r requirements.txt
+pytest==8.3.4
+httpx==0.28.1        # FastAPI TestClient 依赖它发测试请求
+ruff==0.8.4          # lint + 格式检查，CI 里跑
