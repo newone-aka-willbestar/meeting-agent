@@ -34,3 +34,25 @@ class ExtractionOut(BaseModel):
     open_questions: list
     minutes: str | None = None
     weekly_summary: str | None = None
+
+
+class TodoIn(BaseModel):
+    """创建待办的入参。"""
+
+    assignee: str
+    content: str
+    ddl: str | None = None
+    meeting_id: int | None = None
+    source: str = "mcp"
+
+
+class TodoOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    meeting_id: int | None = None
+    assignee: str
+    content: str
+    ddl: str | None = None
+    status: str
+    source: str

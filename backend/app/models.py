@@ -73,3 +73,23 @@ class Extraction(Base):
     # 生成式产出
     minutes: Mapped[str | None] = mapped_column(Text, nullable=True)
     weekly_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class Todo(Base):
+    """待办（即"任务系统"，本地版）。抽取 Agent 自动落库，MCP create_todo 也写这里。"""
+
+    __tablename__ = "todo"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    # 来源会议（手动/外部创建的可为空）
+    meeting_id: Mapped[int | None] = mapped_column(
+        ForeignKey("meeting.id"), nullable=True, index=True
+    )
+    assignee: Mapped[str] = mapped_column(String(64))
+    content: Mapped[str] = mapped_column(Text)
+    ddl: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="open")   # open / done
+    source: Mapped[str] = mapped_column(String(16), default="manual")  # agent / mcp / manual
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

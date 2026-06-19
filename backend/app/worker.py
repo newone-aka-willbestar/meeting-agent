@@ -10,7 +10,7 @@ from sqlalchemy import select
 from app.agent import run_extraction_agent
 from app.asr import get_asr_provider
 from app.db import SessionLocal, init_db
-from app.models import Extraction, Meeting, MeetingStatus
+from app.models import Extraction, Meeting, MeetingStatus, Todo
 from app.queue import dequeue_transcription
 from app.retrieval import build_retrieval_service
 
@@ -80,6 +80,24 @@ def _run_extraction(db, meeting_id: int, transcript: str) -> None:
     ext.minutes = result.get("minutes")
     ext.weekly_summary = result.get("weekly_summary")
     db.commit()
+
+    # 把抽取出的待办落进 todo 表（source=agent）。
+    # 先删这场会议旧的 agent 待办，避免重复转写时重复插入。
+    db.query(Todo).filter(
+        Todo.meeting_id == meeting_id, Todo.source == "agent"
+    ).delete()
+    for t in data["todos"]:
+        db.add(
+            Todo(
+                meeting_id=meeting_id,
+                assignee=t.get("assignee") or "未指派",
+                content=t.get("content", ""),
+                ddl=t.get("ddl"),
+                source="agent",
+            )
+        )
+    db.commit()
+
     log.info(
         "meeting %s 抽取完成：%d 决策 / %d 待办 / %d 风险",
         meeting_id,
