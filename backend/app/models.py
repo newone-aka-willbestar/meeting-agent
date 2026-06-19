@@ -6,7 +6,7 @@ Phase 1 只有一张 meeting 表：存一场会议的元数据、状态、转写
 import datetime
 import enum
 
-from sqlalchemy import DateTime, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -39,3 +39,17 @@ class Meeting(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class Chunk(Base):
+    """转写文本切块后的一段。BM25 语料来自这张表；同一段也会向量化进 Qdrant。
+    chunk.id 同时作为 Qdrant 里向量的 point id，两边对齐。"""
+
+    __tablename__ = "chunk"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    # 属于哪场会议（跨会检索时用它定位来源）
+    meeting_id: Mapped[int] = mapped_column(ForeignKey("meeting.id"), index=True)
+    # 在该会议里的第几段（保留顺序，便于"点回原话上下文"）
+    seq: Mapped[int] = mapped_column()
+    text: Mapped[str] = mapped_column(Text)

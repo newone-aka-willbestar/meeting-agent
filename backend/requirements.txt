@@ -9,3 +9,8 @@ dashscope==1.20.14         # 阿里云通义 ASR / LLM 的官方 SDK
 SQLAlchemy==2.0.36         # ORM：用 Python 类操作 Postgres 表
 psycopg2-binary==2.9.10    # Postgres 驱动（SQLAlchemy 底层连库用）
 redis==5.2.1               # Redis 客户端：异步转写任务队列
+
+# Phase 1-B · 混合检索
+qdrant-client==1.12.1      # 向量库客户端
+rank-bm25==0.2.2           # BM25 关键词检索（纯 Python，最透明）
+jieba==0.42.1              # 中文分词（BM25 / mock embedding 都用）

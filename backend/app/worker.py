@@ -9,6 +9,7 @@ from app.asr import get_asr_provider
 from app.db import SessionLocal, init_db
 from app.models import Meeting, MeetingStatus
 from app.queue import dequeue_transcription
+from app.retrieval import build_retrieval_service
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [worker] %(message)s")
 log = logging.getLogger("worker")
@@ -33,6 +34,14 @@ def process_one(meeting_id: int) -> None:
         meeting.status = MeetingStatus.done.value
         db.commit()
         log.info("meeting %s 转写完成（%d 字）", meeting_id, len(text))
+
+        # 转写成功后再做检索索引。索引失败不应回退转写状态（转写本身已成功），
+        # 所以单独 try、只记日志。
+        try:
+            n = build_retrieval_service().index_meeting(db, meeting_id, text)
+            log.info("meeting %s 已索引 %d 个块", meeting_id, n)
+        except Exception:
+            log.exception("meeting %s 索引失败（转写仍保留）", meeting_id)
     except Exception as exc:  # noqa: BLE001  这里就是要兜住一切异常、落库
         db.rollback()
         meeting = db.get(Meeting, meeting_id)

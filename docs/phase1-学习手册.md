@@ -175,10 +175,14 @@
 
 ---
 
-## 9. 混合检索（护城河核心）⭐🚧
+## 9. 混合检索（护城河核心）⭐✅
 
-> 这是 Phase 1 的"硬核"和面试深挖重点。即使代码还没写，**概念现在就值得吃透**。
-> 文档原以为有现成模块可复用，实际确认要**从零实现**（仍封装成独立 `retrieval/` 模块）。
+> 这是 Phase 1 的"硬核"和面试深挖重点。**从零实现**，封装在 `backend/app/retrieval/`。
+> 已实现：[chunking.py](../backend/app/retrieval/chunking.py)（切块）、[tokenize.py](../backend/app/retrieval/tokenize.py)（jieba 分词）、[embedder.py](../backend/app/retrieval/embedder.py)（向量化，mock/dashscope）、[vector_store.py](../backend/app/retrieval/vector_store.py)（Qdrant）、[bm25.py](../backend/app/retrieval/bm25.py)（BM25）、[fusion.py](../backend/app/retrieval/fusion.py)（RRF 融合）、[reranker.py](../backend/app/retrieval/reranker.py)（重排，mock/dashscope）、[service.py](../backend/app/retrieval/service.py)（串起 index + search）。
+> 真实向量/重排选 **云 DashScope**（text-embedding + gte-rerank），mock 实现用于测试和"先跑通"。
+>
+> **检索流水线**：`query → 向量召回(Qdrant) + BM25 召回 → RRF 融合 → gte-rerank 重排 → Top-K`。
+> 索引时机：worker 转写完成后自动切块、向量化入库。查询入口：`GET /search?q=...`。
 
 ### 9.1 为什么要"检索"
 

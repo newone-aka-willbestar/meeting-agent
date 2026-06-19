@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     asr_provider: str = "mock"
     asr_api_key: str = ""
 
+    # ---- 检索：Embedding / Rerank ----
+    embedding_provider: str = "mock"   # mock / dashscope
+    rerank_provider: str = "mock"      # mock / dashscope
+    # 阿里云百炼 key（embedding/rerank 用；通常和 ASR_API_KEY 是同一个）
+    dashscope_api_key: str = ""
+
     # ---- 上传文件落盘目录 ----
     storage_dir: str = "storage"
 

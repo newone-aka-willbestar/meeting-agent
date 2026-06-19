@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import meetings
+from app.api import meetings, search
 from app.db import init_db
 
 
@@ -21,8 +21,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Meeting Intelligence Agent", version="0.1.0", lifespan=lifespan)
 
-# 挂载会议路由（/meetings/...）
+# 挂载路由：会议（/meetings/...）+ 检索（/search）
 app.include_router(meetings.router)
+app.include_router(search.router)
 
 
 @app.get("/health")
