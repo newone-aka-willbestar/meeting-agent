@@ -19,3 +19,18 @@ class MeetingOut(BaseModel):
     status: str
     transcript: str | None = None
     created_at: datetime.datetime
+
+
+class ExtractionOut(BaseModel):
+    """抽取 Agent 的结构化产出。"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    meeting_id: int
+    meeting_type: str
+    decisions: list
+    todos: list
+    risks: list
+    open_questions: list
+    minutes: str | None = None
+    weekly_summary: str | None = None

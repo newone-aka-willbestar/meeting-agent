@@ -6,7 +6,7 @@ Phase 1 只有一张 meeting 表：存一场会议的元数据、状态、转写
 import datetime
 import enum
 
-from sqlalchemy import DateTime, ForeignKey, String, Text, func
+from sqlalchemy import JSON, DateTime, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -53,3 +53,23 @@ class Chunk(Base):
     # 在该会议里的第几段（保留顺序，便于"点回原话上下文"）
     seq: Mapped[int] = mapped_column()
     text: Mapped[str] = mapped_column(Text)
+
+
+class Extraction(Base):
+    """抽取 Agent 的产出：一场会议一条。结构化结果用 JSON 列存。"""
+
+    __tablename__ = "extraction"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    meeting_id: Mapped[int] = mapped_column(
+        ForeignKey("meeting.id"), unique=True, index=True
+    )
+    meeting_type: Mapped[str] = mapped_column(String(32), default="")
+    # 四类抽取结果，各是一个列表（每项是 dict）
+    decisions: Mapped[list] = mapped_column(JSON, default=list)
+    todos: Mapped[list] = mapped_column(JSON, default=list)
+    risks: Mapped[list] = mapped_column(JSON, default=list)
+    open_questions: Mapped[list] = mapped_column(JSON, default=list)
+    # 生成式产出
+    minutes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    weekly_summary: Mapped[str | None] = mapped_column(Text, nullable=True)

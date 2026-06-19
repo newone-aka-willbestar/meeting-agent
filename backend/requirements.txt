@@ -14,3 +14,6 @@ redis==5.2.1               # Redis 客户端：异步转写任务队列
 qdrant-client==1.12.1      # 向量库客户端
 rank-bm25==0.2.2           # BM25 关键词检索（纯 Python，最透明）
 jieba==0.42.1              # 中文分词（BM25 / mock embedding 都用）
+
+# Phase 2 · 抽取 Agent
+langgraph==0.2.53          # 多步工作流编排：转写→抽取→纪要→周报

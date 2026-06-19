@@ -13,9 +13,9 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_db
-from app.models import Meeting, MeetingStatus
+from app.models import Extraction, Meeting, MeetingStatus
 from app.queue import enqueue_transcription
-from app.schemas import MeetingOut
+from app.schemas import ExtractionOut, MeetingOut
 
 router = APIRouter(prefix="/meetings", tags=["meetings"])
 settings = get_settings()
@@ -62,3 +62,12 @@ def get_meeting(meeting_id: int, db: Session = Depends(get_db)) -> Meeting:
     if meeting is None:
         raise HTTPException(status_code=404, detail="meeting not found")
     return meeting
+
+
+@router.get("/{meeting_id}/extraction", response_model=ExtractionOut)
+def get_extraction(meeting_id: int, db: Session = Depends(get_db)) -> Extraction:
+    """查抽取结果（决策/待办/风险/待议 + 纪要 + 周报）。转写后异步生成，可能稍晚于 done。"""
+    ext = db.scalar(select(Extraction).where(Extraction.meeting_id == meeting_id))
+    if ext is None:
+        raise HTTPException(status_code=404, detail="extraction not ready")
+    return ext

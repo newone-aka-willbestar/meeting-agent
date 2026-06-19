@@ -5,9 +5,12 @@
 
 import logging
 
+from sqlalchemy import select
+
+from app.agent import run_extraction_agent
 from app.asr import get_asr_provider
 from app.db import SessionLocal, init_db
-from app.models import Meeting, MeetingStatus
+from app.models import Extraction, Meeting, MeetingStatus
 from app.queue import dequeue_transcription
 from app.retrieval import build_retrieval_service
 
@@ -42,6 +45,12 @@ def process_one(meeting_id: int) -> None:
             log.info("meeting %s 已索引 %d 个块", meeting_id, n)
         except Exception:
             log.exception("meeting %s 索引失败（转写仍保留）", meeting_id)
+
+        # 抽取 Agent：转写 → 决策/待办/风险/待议 → 纪要 → 周报。同样独立 try。
+        try:
+            _run_extraction(db, meeting_id, text)
+        except Exception:
+            log.exception("meeting %s 抽取失败（转写仍保留）", meeting_id)
     except Exception as exc:  # noqa: BLE001  这里就是要兜住一切异常、落库
         db.rollback()
         meeting = db.get(Meeting, meeting_id)
@@ -52,6 +61,32 @@ def process_one(meeting_id: int) -> None:
         log.exception("meeting %s 转写失败", meeting_id)
     finally:
         db.close()
+
+
+def _run_extraction(db, meeting_id: int, transcript: str) -> None:
+    """跑抽取图并把结果 upsert 进 extraction 表（一场会议一条）。"""
+    result = run_extraction_agent(transcript)
+    ext = db.scalar(select(Extraction).where(Extraction.meeting_id == meeting_id))
+    if ext is None:
+        ext = Extraction(meeting_id=meeting_id)
+        db.add(ext)
+
+    data = result["extraction"]
+    ext.meeting_type = result.get("meeting_type", "")
+    ext.decisions = data["decisions"]
+    ext.todos = data["todos"]
+    ext.risks = data["risks"]
+    ext.open_questions = data["open_questions"]
+    ext.minutes = result.get("minutes")
+    ext.weekly_summary = result.get("weekly_summary")
+    db.commit()
+    log.info(
+        "meeting %s 抽取完成：%d 决策 / %d 待办 / %d 风险",
+        meeting_id,
+        len(data["decisions"]),
+        len(data["todos"]),
+        len(data["risks"]),
+    )
 
 
 def main() -> None:

@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     # 阿里云百炼 key（embedding/rerank 用；通常和 ASR_API_KEY 是同一个）
     dashscope_api_key: str = ""
 
+    # ---- LLM（抽取 / 纪要 / 周报）----
+    llm_provider: str = "mock"         # mock / dashscope（通义 Qwen）
+    llm_model: str = "qwen-plus"
+    llm_api_key: str = ""              # 没填则退回 dashscope_api_key / asr_api_key
+
     # ---- 上传文件落盘目录 ----
     storage_dir: str = "storage"
 
