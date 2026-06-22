@@ -36,7 +36,7 @@ class MockReranker(Reranker):
 
 
 class DashScopeReranker(Reranker):
-    def __init__(self, api_key: str, model: str = "gte-rerank"):
+    def __init__(self, api_key: str, model: str = "gte-rerank-v2"):
         if not api_key:
             raise ValueError("DashScope rerank 需要 dashscope_api_key")
         self.api_key = api_key
@@ -55,6 +55,8 @@ class DashScopeReranker(Reranker):
             return_documents=False,
             api_key=self.api_key,
         )
+        if resp.status_code != 200 or resp.output is None:
+            raise RuntimeError(f"rerank 调用失败: {resp.status_code} {resp.message}")
         # results 每项含原 documents 里的 index 和 relevance_score
         return [
             (docs[r["index"]][0], float(r["relevance_score"]))

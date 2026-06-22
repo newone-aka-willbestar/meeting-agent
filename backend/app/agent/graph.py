@@ -32,12 +32,25 @@ class AgentState(TypedDict, total=False):
 
 
 def _detect_meeting_type(transcript: str) -> str:
-    """极简会议类型判定（够 MVP）。后续可换成 LLM 分类节点。"""
-    if "评审" in transcript:
+    """极简会议类型判定（够 MVP）。后续可换成 LLM 分类节点。
+    用较强信号判定，避免"客户反馈"这种词把站会误判成客户会。"""
+    if "评审会" in transcript or "代码评审" in transcript:
         return "review"
-    if "客户" in transcript:
+    if "客户会" in transcript or "客户会议" in transcript:
         return "client"
     return "standup"  # 默认按站会处理（站会/周会/晨会）
+
+
+def _strip_code_fence(text: str) -> str:
+    """去掉 LLM 可能给纪要套的 ```markdown ... ``` 代码块外壳。"""
+    t = text.strip()
+    if t.startswith("```"):
+        lines = t.split("\n")
+        lines = lines[1:]  # 去掉 ```markdown 那行
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        t = "\n".join(lines)
+    return t.strip()
 
 
 def load_skill_node(state: AgentState) -> AgentState:
@@ -47,6 +60,17 @@ def load_skill_node(state: AgentState) -> AgentState:
     except FileNotFoundError:
         body = ""  # 没有对应 skill 就不注入专项规则，用通用抽取
     return {"meeting_type": meeting_type, "skill_body": body}
+
+
+def _as_objects(items: list, key: str) -> list[dict]:
+    """归一化：LLM 有时把某类返回成字符串列表，统一成 [{key: 文本}] 的对象列表。"""
+    result = []
+    for it in items or []:
+        if isinstance(it, str):
+            result.append({key: it})
+        elif isinstance(it, dict):
+            result.append(it)
+    return result
 
 
 def extract_node(state: AgentState, llm: LLMProvider) -> AgentState:
@@ -62,10 +86,10 @@ def extract_node(state: AgentState, llm: LLMProvider) -> AgentState:
     data = parse_json_object(out)
     return {
         "extraction": {
-            "decisions": data.get("decisions", []),
-            "todos": data.get("todos", []),
-            "risks": data.get("risks", []),
-            "open_questions": data.get("open_questions", []),
+            "decisions": _as_objects(data.get("decisions"), "content"),
+            "todos": _as_objects(data.get("todos"), "content"),
+            "risks": _as_objects(data.get("risks"), "description"),
+            "open_questions": _as_objects(data.get("open_questions"), "content"),
         }
     }
 
@@ -76,7 +100,7 @@ def minutes_node(state: AgentState, llm: LLMProvider) -> AgentState:
         f"抽取结果：\n{json.dumps(state['extraction'], ensure_ascii=False)}\n\n"
         f"转写：\n{state['transcript']}"
     )
-    return {"minutes": llm.complete(prompt, temperature=0.3)}
+    return {"minutes": _strip_code_fence(llm.complete(prompt, temperature=0.3))}
 
 
 def weekly_node(state: AgentState, llm: LLMProvider) -> AgentState:
