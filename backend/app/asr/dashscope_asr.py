@@ -22,18 +22,22 @@ class DashScopeASR(ASRProvider):
         import dashscope
         from dashscope.audio.asr import Recognition
 
+        from app.asr.audio import to_wav16k
+
         dashscope.api_key = self.api_key
+
+        # 先把任意格式统一转成 16k 单声道 wav
+        wav_path = to_wav16k(audio_path)
 
         recognition = Recognition(
             model=self.model,
-            format="wav",        # 调用前会把音频统一转成 16k 单声道 wav
+            format="wav",
             sample_rate=16000,
             language_hints=["zh"],
             callback=None,       # 同步模式不需要回调
         )
-        result = recognition.call(audio_path)
+        result = recognition.call(wav_path)
 
-        # 同步模式下把所有句子的 text 拼起来。
-        # 真机联调时按实际返回结构微调这里的解析。
+        # 同步模式下把所有句子的 text 拼起来
         sentences = result.get_sentence() or []
         return "".join(s.get("text", "") for s in sentences)

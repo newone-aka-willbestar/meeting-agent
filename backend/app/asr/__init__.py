@@ -18,6 +18,8 @@ def get_asr_provider() -> ASRProvider:
         # 延迟 import：用 mock 时不必依赖 dashscope SDK
         from app.asr.dashscope_asr import DashScopeASR
 
-        return DashScopeASR(api_key=settings.asr_api_key)
+        # key 优先 asr_api_key，没填就用统一的 dashscope_api_key（一个百炼 key 通吃）
+        key = settings.asr_api_key or settings.dashscope_api_key
+        return DashScopeASR(api_key=key)
 
     raise ValueError(f"未知的 ASR_PROVIDER: {settings.asr_provider}（可选 mock / dashscope）")

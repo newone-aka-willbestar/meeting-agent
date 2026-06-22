@@ -6,6 +6,7 @@ pydantic-settings==2.7.1
 # Phase 1 · 转写
 python-multipart==0.0.20   # FastAPI 接收上传文件（multipart/form-data）必需
 dashscope==1.20.14         # 阿里云通义 ASR / LLM 的官方 SDK
+imageio-ffmpeg==0.5.1      # 自带 ffmpeg 二进制：把上传音频转成 16k 单声道 wav（免系统装 ffmpeg）
 SQLAlchemy==2.0.36         # ORM：用 Python 类操作 Postgres 表
 psycopg2-binary==2.9.10    # Postgres 驱动（SQLAlchemy 底层连库用）
 redis==5.2.1               # Redis 客户端：异步转写任务队列
