@@ -3,10 +3,13 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# pip 源可切换：本地默认官方源；阿里云部署时传 --build-arg PIP_INDEX=阿里云镜像，免梯子
+ARG PIP_INDEX=https://pypi.org/simple
+
 # 先单独拷依赖清单再装，利用 Docker 层缓存：
 # 只要 requirements.txt 没变，重建镜像就不必重新 pip install。
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -i $PIP_INDEX -r requirements.txt
 
 # 再拷源码（源码常变，放在依赖层之后）
 COPY app ./app
