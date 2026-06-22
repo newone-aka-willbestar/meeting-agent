@@ -1,0 +1,47 @@
+/* 全局主题：清爽的浅色仪表盘 */
+:root {
+  --el-color-primary: #6366f1;        /* 主色：靛蓝 */
+  --brand: #6366f1;
+  --brand-2: #8b5cf6;
+  --bg: #f4f6fb;
+  --card-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+}
+
+/* 卡片统一：圆角 + 柔和阴影 + 无边框 */
+.el-card {
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: var(--card-shadow) !important;
+}
+.el-card__header {
+  font-weight: 600;
+  border-bottom: 1px solid #f0f1f5 !important;
+}
+
+/* 统计卡 */
+.stat {
+  border-radius: 14px;
+  padding: 18px 20px;
+  color: #fff;
+  box-shadow: var(--card-shadow);
+}
+.stat .num { font-size: 30px; font-weight: 700; line-height: 1.1; }
+.stat .label { opacity: 0.92; margin-top: 6px; font-size: 13px; }
+.stat.indigo { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+.stat.green { background: linear-gradient(135deg, #10b981, #059669); }
+.stat.amber { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.stat.slate { background: linear-gradient(135deg, #64748b, #475569); }
+
+/* 让 router 切换有个淡入 */
+.fade-enter-active { transition: opacity 0.2s ease; }
+.fade-enter-from { opacity: 0; }

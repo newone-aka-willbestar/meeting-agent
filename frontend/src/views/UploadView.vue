@@ -1,21 +1,23 @@
 <script setup>
-// 上传页：上传音频 → 自动轮询状态 → 列出所有会议，点击进看板
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { api } from '../api'
 
 const router = useRouter()
 const meetings = ref([])
-const uploading = ref(false)
+
+const stats = computed(() => ({
+  total: meetings.value.length,
+  done: meetings.value.filter((m) => m.status === 'done').length,
+  processing: meetings.value.filter((m) => ['pending', 'processing'].includes(m.status)).length,
+}))
 
 async function refresh() {
   meetings.value = await api.listMeetings()
 }
 
-// el-upload 的自定义上传：拿到文件后调后端
 async function doUpload(option) {
-  uploading.value = true
   try {
     const m = await api.upload(option.file)
     ElMessage.success(`已上传，会议 #${m.id} 正在处理…`)
@@ -23,63 +25,83 @@ async function doUpload(option) {
     pollUntilDone(m.id)
   } catch (e) {
     ElMessage.error('上传失败：' + e.message)
-  } finally {
-    uploading.value = false
   }
 }
 
-// 轮询单条会议状态，done 后刷新列表
 function pollUntilDone(id) {
   const timer = setInterval(async () => {
     const m = await api.getMeeting(id)
     await refresh()
-    if (m.status === 'done' || m.status === 'failed') clearInterval(timer)
+    if (m.status === 'done' || m.status === 'failed') {
+      clearInterval(timer)
+      if (m.status === 'done') ElMessage.success(`会议 #${id} 处理完成`)
+    }
   }, 1500)
 }
 
 const statusType = (s) =>
   ({ pending: 'info', processing: 'warning', done: 'success', failed: 'danger' }[s] || 'info')
+const statusText = (s) =>
+  ({ pending: '排队中', processing: '处理中', done: '已完成', failed: '失败' }[s] || s)
 
 onMounted(refresh)
 </script>
 
 <template>
-  <el-card>
-    <template #header>上传会议音频</template>
+  <!-- 统计卡 -->
+  <el-row :gutter="16" class="stats">
+    <el-col :span="8"><div class="stat indigo"><div class="num">{{ stats.total }}</div><div class="label">会议总数</div></div></el-col>
+    <el-col :span="8"><div class="stat green"><div class="num">{{ stats.done }}</div><div class="label">已完成</div></div></el-col>
+    <el-col :span="8"><div class="stat amber"><div class="num">{{ stats.processing }}</div><div class="label">处理中</div></div></el-col>
+  </el-row>
+
+  <!-- 上传区 -->
+  <el-card class="block">
     <el-upload drag :show-file-list="false" :http-request="doUpload" accept="audio/*">
-      <div style="font-size: 40px">🎙️</div>
-      <div class="el-upload__text">把音频拖到这里，或 <em>点击选择</em></div>
-      <template #tip>
-        <div class="el-upload__tip">上传后会自动转写、抽取决策/待办/风险并生成纪要</div>
-      </template>
+      <div class="drop">
+        <div class="drop-icon">🎙️</div>
+        <div class="drop-title">把会议音频拖到这里，或<em>点击选择</em></div>
+        <div class="drop-tip">上传后自动转写 → 抽取决策/待办/风险 → 生成纪要与周报</div>
+      </div>
     </el-upload>
   </el-card>
 
-  <el-card style="margin-top: 16px">
+  <!-- 会议列表 -->
+  <el-card class="block">
     <template #header>
-      会议列表
-      <el-button size="small" style="float: right" @click="refresh">刷新</el-button>
+      <div class="card-head">
+        <span><el-icon><List /></el-icon> 会议列表</span>
+        <el-button size="small" text @click="refresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </div>
     </template>
-    <el-table :data="meetings" empty-text="还没有会议，先上传一段">
-      <el-table-column prop="id" label="#" width="60" />
-      <el-table-column prop="filename" label="文件名" />
-      <el-table-column label="状态" width="110">
+    <el-table :data="meetings" empty-text="还没有会议，先上传一段" style="width: 100%">
+      <el-table-column prop="id" label="#" width="64" />
+      <el-table-column prop="filename" label="文件名" show-overflow-tooltip />
+      <el-table-column label="状态" width="120">
         <template #default="{ row }">
-          <el-tag :type="statusType(row.status)">{{ row.status }}</el-tag>
+          <el-tag :type="statusType(row.status)" effect="light" round>{{ statusText(row.status) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120">
+      <el-table-column label="" width="130" align="right">
         <template #default="{ row }">
-          <el-button
-            size="small"
-            type="primary"
-            :disabled="row.status !== 'done'"
-            @click="router.push(`/board?id=${row.id}`)"
-          >
-            看纪要
+          <el-button size="small" type="primary" plain :disabled="row.status !== 'done'"
+            @click="router.push(`/board?id=${row.id}`)">
+            看纪要 <el-icon class="el-icon--right"><ArrowRight /></el-icon>
           </el-button>
         </template>
       </el-table-column>
     </el-table>
   </el-card>
 </template>
+
+<style scoped>
+.stats { margin-bottom: 16px; }
+.block { margin-bottom: 16px; }
+.card-head { display: flex; justify-content: space-between; align-items: center; }
+.card-head .el-icon { vertical-align: -2px; margin-right: 4px; }
+
+.drop { padding: 24px 0; }
+.drop-icon { font-size: 46px; }
+.drop-title { font-size: 16px; margin-top: 10px; }
+.drop-tip { color: #98a2b3; font-size: 13px; margin-top: 6px; }
+</style>
