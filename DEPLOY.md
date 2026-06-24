@@ -23,7 +23,15 @@
 ssh root@你的公网IP
 ```
 
-## 2. 装 Docker
+## 2. 加 4G swap（2 核 2G 服务器必做，否则构建会被内存杀掉）
+
+```bash
+fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+free -h   # 看到 Swap 有 4G 即成功
+```
+
+## 3. 装 Docker
 
 ```bash
 curl -fsSL https://get.docker.com | bash
@@ -31,7 +39,7 @@ systemctl enable --now docker
 docker version   # 能打印版本即成功
 ```
 
-## 3. 配 Docker 镜像加速（拉镜像快、免梯子）
+## 4. 配 Docker 镜像加速（拉镜像快、免梯子）
 
 阿里云每个账号有专属加速地址：控制台搜「容器镜像服务」→ 镜像加速器，复制你的地址，替换下面的 `<你的加速地址>`：
 ```bash
@@ -42,7 +50,7 @@ EOF
 systemctl restart docker
 ```
 
-## 4. 拉代码
+## 5. 拉代码
 
 ```bash
 apt-get update && apt-get install -y git
@@ -50,7 +58,7 @@ git clone https://github.com/newone-aka-willbestar/meeting-agent.git
 cd meeting-agent
 ```
 
-## 5. 配置 .env
+## 6. 配置 .env
 
 ```bash
 cp .env.prod.example .env
@@ -58,20 +66,22 @@ vi .env        # 改两处：POSTGRES_PASSWORD 设强密码、DASHSCOPE_API_KEY 
 ```
 （vi 用法：`i` 进编辑，改完按 `Esc`，输入 `:wq` 回车保存退出。）
 
-## 6. 一键起
+## 7. 一键起
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
 ```
-首次构建装依赖 + 打包前端，约 3-8 分钟。完成后：
+首次构建装依赖 + 打包前端，2G 服务器约 10-20 分钟（有 swap 撑着，慢但不会崩）。完成后：
 ```bash
 docker compose -f docker-compose.prod.yml ps     # 看服务状态
 ```
 
-## 7. 访问
+## 8. 访问
 
-浏览器打开 **`http://你的公网IP`** —— 这就是你的 live demo。
-上传一段会议音频 → 看转写 / 决策待办风险 / 纪要周报 / 跨会检索。
+- 作品集主页：**`http://你的公网IP`** —— 三个项目并排展示
+- 会议 demo：**`http://你的公网IP/meeting/`** —— 上传音频看转写/决策待办风险/纪要周报/检索
+
+把主页地址写进简历即可。
 
 ---
 

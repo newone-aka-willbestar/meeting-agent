@@ -1,0 +1,4 @@
+# 构建镜像时别把本地的 node_modules / dist 拷进去
+# （本地是 Windows 编译的，进 Linux 容器会坏；容器里会自己 npm install）
+node_modules
+dist

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>赵经元 · AI 应用开发 · 项目作品集</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #0f172a; color: #e2e8f0; line-height: 1.6;
+    }
+    .hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #6d28d9 100%);
+      padding: 72px 24px 56px; text-align: center;
+    }
+    .hero h1 { font-size: 38px; color: #fff; letter-spacing: 1px; }
+    .hero .role { font-size: 18px; color: #c4b5fd; margin-top: 10px; }
+    .hero .intro { max-width: 760px; margin: 20px auto 0; color: #ddd6fe; font-size: 15px; }
+    .hero .links { margin-top: 22px; }
+    .hero .links a { color: #fff; text-decoration: none; margin: 0 12px; font-size: 14px; opacity: .9; }
+    .hero .links a:hover { opacity: 1; text-decoration: underline; }
+
+    .wrap { max-width: 1080px; margin: -32px auto 60px; padding: 0 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 22px; }
+    .card {
+      background: #1e293b; border: 1px solid #334155; border-radius: 16px;
+      padding: 26px; display: flex; flex-direction: column;
+      transition: transform .18s, border-color .18s;
+    }
+    .card:hover { transform: translateY(-4px); border-color: #7c3aed; }
+    .card .badge { font-size: 12px; color: #a78bfa; font-weight: 600; letter-spacing: .5px; }
+    .card h2 { font-size: 20px; color: #f8fafc; margin: 8px 0 10px; }
+    .card p { font-size: 14px; color: #94a3b8; flex: 1; }
+    .tags { margin: 14px 0 18px; }
+    .tag {
+      display: inline-block; background: #312e81; color: #c7d2fe;
+      font-size: 12px; padding: 3px 10px; border-radius: 20px; margin: 3px 4px 3px 0;
+    }
+    .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      text-decoration: none; font-size: 14px; padding: 9px 16px; border-radius: 9px;
+      font-weight: 500; transition: opacity .15s;
+    }
+    .btn:hover { opacity: .88; }
+    .btn-primary { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; }
+    .btn-ghost { background: #334155; color: #e2e8f0; }
+    .live { color: #34d399; font-size: 12px; margin-left: 6px; }
+    footer { text-align: center; color: #64748b; font-size: 13px; padding: 30px; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>赵经元</h1>
+    <div class="role">AI 应用开发 · 大模型应用 / RAG / Agent</div>
+    <div class="intro">
+      聚焦大模型应用开发，具备从检索链路、Agent 编排到容器化部署的端到端落地能力。
+      以下三个项目代码均开源、可现场演示，能讲清每处技术选型的设计权衡。
+    </div>
+    <div class="links">
+      <a href="https://github.com/newone-aka-willbestar" target="_blank">GitHub</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="grid">
+
+      <!-- 会议数字员工（本服务器 live） -->
+      <div class="card">
+        <div class="badge">在线可体验 · LIVE</div>
+        <h2>会议数字员工 · Meeting Agent</h2>
+        <p>上传会议音频 → 转写 → LangGraph 抽取「决策/待办/风险」→ 生成纪要与周报；
+           自研 MCP server 把能力暴露为标准工具，可被 Claude Desktop 调用；混合检索支持跨会问答。</p>
+        <div class="tags">
+          <span class="tag">LangGraph</span><span class="tag">自写 MCP</span>
+          <span class="tag">混合检索</span><span class="tag">FastAPI</span>
+          <span class="tag">Vue3</span><span class="tag">Docker</span>
+        </div>
+        <div class="btns">
+          <a class="btn btn-primary" href="/meeting/">在线体验 →</a>
+          <a class="btn btn-ghost" href="https://github.com/newone-aka-willbestar/meeting-agent" target="_blank">源码</a>
+        </div>
+      </div>
+
+      <!-- A 研报系统 -->
+      <div class="card">
+        <div class="badge">多智能体协作</div>
+        <h2>LangGraph 深度研报 Agent</h2>
+        <p>Planner→Researcher→Reviewer 协作架构 + 自我纠错闭环（不合格自动打回），
+           配套异步任务、Redis 持久化、断点续跑、限流认证、离线评测等生产级工程能力。</p>
+        <div class="tags">
+          <span class="tag">多智能体</span><span class="tag">自我纠错</span>
+          <span class="tag">断点续跑</span><span class="tag">SSE</span><span class="tag">DeepSeek-V3</span>
+        </div>
+        <div class="btns">
+          <a class="btn btn-ghost" href="https://github.com/newone-aka-willbestar/LangGraph-Enterprise-Data-Insight-Agent" target="_blank">源码 + 文档</a>
+        </div>
+      </div>
+
+      <!-- B 售后 RAG -->
+      <div class="card">
+        <div class="badge">RAG 知识库问答</div>
+        <h2>本地化 RAG 智能售后助手</h2>
+        <p>面向制造业售后手册问答，HyDE + BM25/向量混合 + 重排，意图路由、多轮记忆、
+           5 类报表生成、Word 导出，5 指标自动评测；检索命中率 66.7%→91.7%。</p>
+        <div class="tags">
+          <span class="tag">RAG</span><span class="tag">HyDE</span>
+          <span class="tag">混合检索</span><span class="tag">重排</span><span class="tag">自动评测</span>
+        </div>
+        <div class="btns">
+          <a class="btn btn-ghost" href="https://github.com/newone-aka-willbestar/AI-Localized-RAG-AfterSales-Assistant" target="_blank">源码 + Demo 视频</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>© 2026 赵经元 · 持续迭代中</footer>
+</body>
+</html>

@@ -9,6 +9,7 @@ const routes = [
 ]
 
 export default createRouter({
-  history: createWebHistory(),
+  // BASE_URL 来自 vite 的 base：本地开发是 '/'，生产构建传 --base=/meeting/ 时自动变 '/meeting/'
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 })
